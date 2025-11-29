@@ -184,40 +184,7 @@ void  walk(int wtime) //Makes the cars go straight
 
 
 // Case 1
-void turnR(int wtime)  //Makes the car turn right and then go straight
-{
-  // Equalize speeds, move forward an inch
-  digitalWrite(In1, LOW);   // Brake - HIGH == on, LOW == off
-  digitalWrite(In3, LOW);   // Brake - HIGH == on, LOW == off
-  digitalWrite(In2, LOW);  // Direction - Low == forward, HIGH == reverse
-  digitalWrite(In4, HIGH);   // Direction - Low == reverse, HIGH == forward
-  delay(10);
-  analogWrite(EnA, 160); // Motor A
-  analogWrite(EnB, 180);  // Motor B
-  delay(300);
-
-  // Turn right
-  analogWrite(EnA, 140);
-  analogWrite(EnB, 0);
-
-  // Motor A: right - Brake, Direction
-  digitalWrite(In1, LOW);   // Brake - HIGH == on, LOW == off
-  digitalWrite(In2, LOW);  // Direction - Low == forward, HIGH == reverse
-  
-  // Motor B: left - Brake, Direction
-  digitalWrite(In3, HIGH);  // Brake - HIGH == on, LOW == off
-  digitalWrite(In4, LOW);   // Direction - Low == reverse, HIGH == forward
-
-  // Duration
-  delay(700);
-
-  // Turn off
-  analogWrite(EnA, 0);
-
-}
-
-// Case 3
-void turnL(int wtime) //Makes the car turn left and then go straight
+void TurnR(int duration)  // straight, turn left
 {
   // Equalize speeds, move forward an inch
   digitalWrite(In1, LOW);   // Brake - HIGH == on, LOW == off
@@ -242,10 +209,44 @@ void turnL(int wtime) //Makes the car turn left and then go straight
   digitalWrite(In4, HIGH);  // Direction - Low == reverse, HIGH == forward
 
   // Duration
-  delay(900);
+  delay(620);
+  //delay(duration);
 
   // Turn off
   analogWrite(EnB, 0);
+}
+
+// Case 3
+void TurnL(int duration) // straight, turn right
+{
+  // Equalize speeds, move forward an inch
+  digitalWrite(In1, LOW);   // Brake - HIGH == on, LOW == off
+  digitalWrite(In3, LOW);   // Brake - HIGH == on, LOW == off
+  digitalWrite(In2, LOW);  // Direction - Low == forward, HIGH == reverse
+  digitalWrite(In4, HIGH);   // Direction - Low == reverse, HIGH == forward
+  delay(10);
+  analogWrite(EnA, 160); // Motor A
+  analogWrite(EnB, 180);  // Motor B
+  delay(300);
+
+  // Turn right
+  analogWrite(EnA, 140);
+  analogWrite(EnB, 0);
+
+  // Motor A: right - Brake, Direction
+  digitalWrite(In1, LOW);   // Brake - HIGH == on, LOW == off
+  digitalWrite(In2, LOW);  // Direction - Low == forward, HIGH == reverse
+  
+  // Motor B: left - Brake, Direction
+  digitalWrite(In3, HIGH);  // Brake - HIGH == on, LOW == off
+  digitalWrite(In4, LOW);   // Direction - Low == reverse, HIGH == forward
+
+  // Duration
+  delay(600);
+  //delay(duration);
+
+  // Turn off
+  analogWrite(EnA, 0);
 }
 
 // Case 4
@@ -259,7 +260,7 @@ void back(int wtime) //Makes the car turn around  180. This happens when the sen
   delay(10);
   analogWrite(EnA, 140); // Motor A
   analogWrite(EnB, 190);  // Motor B
-  delay(1200);
+  delay(800);
 
   analogWrite(EnA, 0);
   analogWrite(EnB, 0);
@@ -529,4 +530,3 @@ void  loop() {
 }
 
   
-
