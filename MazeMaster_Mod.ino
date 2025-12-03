@@ -18,10 +18,26 @@
 //#include "NavigationController.h"
 #include "NavigationController.c"
 
-const  int pingt = 7;   //the same trigger is used by all sensors
-const int pinge2 = 6;   //front ultrassonic sensor
-const int pinge1 = 8;   //right ultrassonic sensor
-const  int pinge3 = 9;  //left ultrassonic sensor
+// sensor constants
+#define LEFT_ECHO     7
+#define LEFT_TRIGGER  6
+#define LEFT_R        1.01325
+#define LEFT_OFFSET   -1.549
+
+#define FRONT_ECHO    4
+#define FRONT_TRIGGER 5
+#define FRONT_R       0.982
+#define FRONT_OFFSET  -0.732
+
+#define RIGHT_ECHO    2
+#define RIGHT_TRIGGER 10
+#define RIGHT_R       1.00
+#define RIGHT_OFFSET  0.15
+
+//const  int pingt = 7;   //the same trigger is used by all sensors
+//const int pinge2 = 6;   //front ultrassonic sensor
+//const int pinge1 = 8;   //right ultrassonic sensor
+//const  int pinge3 = 9;  //left ultrassonic sensor
 int rec[50];
 int a;
 
@@ -93,7 +109,7 @@ void setup() {
 
 //******************************************
 //---------------------------------------------------
-int  ping (int pinge){
+/*int  ping (int pinge){
   long duration, cm;
   int x,xmed;
   int dela=25;
@@ -127,7 +143,7 @@ long microsecondsToCentimeters(long  microseconds) {
   // The ping travels out and back, so to find the distance of the object we
   // take half of the distance travelled.
   return microseconds / 29 / 2;
-}
+} */
 
 
 //-----------------------------------------------
@@ -473,11 +489,44 @@ void  Recb(){
 // Output state value which determines which action is taken
 // 1 right, 2 walk, 3 left, 4 back
 int pings(){
-  const  int D = 20;
+  //const  int D = 20;
   
-  rightdist = getDistance(int pinTrig, int pinEcho, double R, double offset);
-  leftdist = getDistance(int pinTrig, int pinEcho, double R, double offset);
-  frontdist = getDistance(int pinTrig, int pinEcho, double R, double offset);
+  // Get the distance in each direction
+  rightdist = getDistance(int RIGHT_TRIGGER, int RIGHT_ECHO, double RIGHT_R, double RIGHT_OFFSET);
+  leftdist = getDistance(int LEFT_TRIGGER, int LEFT_ECHO, double LEFT_R, double LEFT_OFFSET);
+  frontdist = getDistance(int FRONT_TRIGGER, int FRONT_ECHO, double FRONT_R, double FRONT_OFFSET);
+
+  // convert direction int spesific case
+  // left -> 3
+  // forward -> 2
+  // right -> 1
+  // back -> 4
+  // complete -> ?
+  switch (dir)
+  {
+    case LEFT:
+      return 3;
+      break;
+
+    case FORWARD:
+      return 2;
+      break;
+    
+    case RIGHT:
+      return 1;
+      break;
+    
+    case BACK:
+      return 4;
+      break;
+
+    case COMPLETE:
+      //return ?; TODO: what is the complete state
+      //break;
+    default:
+      return -1;
+  }
+  
   /*
   dirdist = ping(pinge1);
   Serial.print("distance  at right(->) = ");
@@ -530,3 +579,4 @@ void  loop() {
 }
 
   
+
