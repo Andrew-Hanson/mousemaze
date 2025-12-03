@@ -1,8 +1,8 @@
 /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>*
 * Project: Arduino Maze Solver                                  *
 * File: NavigationController.c                                  *
-* Version: 1.0                                                  *
-* Last Modified: Nov. 20th, 2025                                *
+* Version: 1.1                                                  *
+* Last Modified: Dec. 3rd, 2025                                 *
 *                                                               *
 * Author: Chloe Beal                                            *
 *                                                               *
@@ -14,6 +14,12 @@
 * Description: Using 3 distance measurements (left, front, and  *
 *   right), decide if the maze is complete, or if a direction   *
 *   should be moved in.                                         *
+*                                                               *
+* Change Log:                                                   *
+*   1.0: Inital release.                                        *
+*   1.1: Updated maze complete checking to allow for when a     *
+*       sensor fails to find a wall, it counts that as being    *
+*       outside the maze.                                       *
 *                                                               *
 *<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
@@ -34,7 +40,6 @@
 #define MAX_VAL_SIDE_WALL 20    // Max value that could still be 
                                 // a side wall
 #define WALL_VAL_ERROR 0.5      // Possible error measured value
-
 #define MAX_VAL_MAZE_WALL 100   // Max value that could still be
                                 // a wall in the maze.
 
@@ -114,17 +119,17 @@ char IsComplete(const float leftDist, const float frontDist, const float rightDi
 {
     char walls = 0x00;
     //check for left wall
-    if(leftDist < (MAX_VAL_MAZE_WALL - WALL_VAL_ERROR))
+    if ((leftDist < (MAX_VAL_MAZE_WALL - WALL_VAL_ERROR)) && (leftDist > WALL_VAL_ERROR))
     {
         walls = walls | LEFT_WALL;
     }
-    //check for front gap
-    if(frontDist < (MAX_VAL_MAZE_WALL - WALL_VAL_ERROR))
+    //check for front wall
+    if ((frontDist < (MAX_VAL_MAZE_WALL - WALL_VAL_ERROR)) && (leftDist > WALL_VAL_ERROR))
     {
         walls = walls | FRONT_WALL;
     }
-    //check for right gap
-    if (rightDist < (MAX_VAL_MAZE_WALL - WALL_VAL_ERROR))
+    //check for right wall
+    if ((rightDist < (MAX_VAL_MAZE_WALL - WALL_VAL_ERROR)) && (leftDist > WALL_VAL_ERROR))
     {
         walls = walls | RIGHT_WALL;
     }
