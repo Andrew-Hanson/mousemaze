@@ -24,13 +24,13 @@
 ||                       Public Constants                      ||
 ===============================================================*/
 
-#define MAX_VAL_FRONT_WALL 0.5  // Max value that could still be 
+#define MAX_VAL_FRONT_WALL 20   // Max value that could still be 
                                 // a front wall
-#define MAX_VAL_SIDE_WALL 1     // Max value that could still be 
+#define MAX_VAL_SIDE_WALL 20    // Max value that could still be 
                                 // a side wall
-#define WALL_VAL_ERROR 0.1      // Possible error measured value
+#define WALL_VAL_ERROR 0.5      // Possible error measured value
 
-#define MAX_VAL_MAZE_WALL 5     // Max value that could still be
+#define MAX_VAL_MAZE_WALL 100   // Max value that could still be
                                 // a wall in the maze.
 
 /*===============================================================
@@ -64,3 +64,4 @@ enum Direction {FORWARD, RIGHT, BACK, LEFT, COMPLETE};
 enum Direction GetNextMov(const float leftDist, const float frontDist, const float rightDist);
 
 #endif 
+
