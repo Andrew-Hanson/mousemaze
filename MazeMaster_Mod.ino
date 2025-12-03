@@ -3,19 +3,6 @@
 //Subject: A finite state machine-powered  maze solver. The starting point of the maze must be in one of the left corners and  the ending must be in one of the right corners.
 
 //----------------------------------------------------------------------------
-/* ##### MODIFIED #####
-  Motor Pin Shield Information:
-    Motor A:        Left
-      Direction 12
-      PWM       3
-      Brake     9
-    Motor B:        Right
-      Direction 13
-      PWM       11
-      Brake     8
-*/
-
-//#include "NavigationController.h"
 #include "NavigationController.c"
 
 // sensor constants
@@ -34,13 +21,12 @@
 #define RIGHT_R       1.00
 #define RIGHT_OFFSET  0.15
 
-//const  int pingt = 7;   //the same trigger is used by all sensors
-//const int pinge2 = 6;   //front ultrassonic sensor
-//const int pinge1 = 8;   //right ultrassonic sensor
-//const  int pinge3 = 9;  //left ultrassonic sensor
-int rec[50];
-int a;
+// sensor variables
+double rightdist = 0;
+double leftdist = 0;
+double frontdist = 0;
 
+// motor constants
 int In1 = 8;   //right      // Modified - From A5 to 8    Brake - HIGH == on, LOW == off
 int In2 = 13;  //right      // Modified - From A4 to 13   Direction - Low == reverse, HIGH == forward
 int EnA = 11;  //right      // Modified - From 10 to 11   PWM
@@ -48,15 +34,17 @@ int EnA = 11;  //right      // Modified - From 10 to 11   PWM
 int In3 = 9;   //left       // Modified - From A3 to 9    Brake - HIGH == on, LOW == off     
 int In4 = 12;  //left       // Modified - From A2 to 12   Direction - Low == forward, HIGH == reverse
 int EnB = 3;   //left       //  Modified - From 11 to 3   PWM
+
+// other constants / purpose unknown to Chloe
+int rec[50];
+int a;
+
 int dir;
 int esqdist;
 int dirdist;
-int  fdist;
+int fdist;
 boolean button=0;
 static int state=-1;
-double rightdist = 0;
-double leftdist = 0;
-double frontdist = 0;
 
 void B_ISR(){ //The button is activated by an  Interrupt System Routine
     button=1;
@@ -66,14 +54,8 @@ void setup() {
   // HC-05 default baud rate
   Serial.begin(38400);
   //button=0;
-  pinMode(button,  INPUT);
-  attachInterrupt(0,B_ISR,RISING);
-
-  // Ultrasonic Sensors
-  pinMode(pingt, OUTPUT);
-  pinMode(pinge1, INPUT);
-  pinMode(pinge2, INPUT);
-  pinMode(pinge3, INPUT);
+  pinMode(button, INPUT);
+  attachInterrupt(0,B_ISR, RISING);
 
   a=0;
 
@@ -92,9 +74,9 @@ void setup() {
   state = -1;
 
   // Sensor Distances
-  rightdist = 0;
-  leftdist = 0;
-  frontdist = 0;
+  rightdist = 0.0;
+  leftdist = 0.0;
+  frontdist = 0.0;
 
   // Help to Serial
   Serial.println("************************");
@@ -105,45 +87,6 @@ void setup() {
   Serial.println("Turn Around: 4");
   Serial.println("************************");
 }
-
-
-//******************************************
-//---------------------------------------------------
-/*int  ping (int pinge){
-  long duration, cm;
-  int x,xmed;
-  int dela=25;
-  int MAX = 1500;
-  int num = 0;
-  int sum=0;
-
-  for(int i=0;i<=5;i++){
-    digitalWrite(pingt, LOW);
-    delayMicroseconds(2);
-    digitalWrite(pingt,  HIGH);
-    delayMicroseconds(5);
-    digitalWrite(pingt, LOW);
-    duration =  pulseIn(pinge, HIGH);         //Refrence Doc:   https://docs.arduino.cc/language-reference/en/functions/advanced-io/pulseIn/
-    x = microsecondsToCentimeters(duration);
-    if(x<MAX){
-      num ++;
-    }
-    else{x=0;}
-    sum+=x;
-    
-    delay(dela);
-  }
-
-  xmed=sum/num;
-  return xmed;
-} 
-
-long microsecondsToCentimeters(long  microseconds) {
-  // The speed of sound is 340 m/s or 29 microseconds per centimeter.
-  // The ping travels out and back, so to find the distance of the object we
-  // take half of the distance travelled.
-  return microseconds / 29 / 2;
-} */
 
 
 //-----------------------------------------------
@@ -282,54 +225,6 @@ void back(int wtime) //Makes the car turn around  180. This happens when the sen
   analogWrite(EnB, 0);
 }
 
-// Case 5
-void TurnA(int wtime) //
-{
-  analogWrite(EnA, 192);
-  analogWrite(EnB, 172);
-  digitalWrite(In1, LOW);
-  digitalWrite(In2, HIGH);
-  digitalWrite(In3, HIGH);
-  digitalWrite(In4, LOW);
-  delay(wtime-141);
-  analogWrite(EnA, 170);
-  analogWrite(EnB, 170);
-  digitalWrite(In1, HIGH);
-  digitalWrite(In2, LOW);
-  digitalWrite(In3, HIGH);
-  digitalWrite(In4, LOW);
-  delay(wtime*2+50);
-  digitalWrite(In1, LOW);
-  digitalWrite(In2, LOW);
-  digitalWrite(In3, LOW);
-  digitalWrite(In4, LOW);
-  delay(5);
-}
-
-// Case 6
-void TurnB(int wtime) //
-{
-  analogWrite(EnA, 170);
-  analogWrite(EnB, 170);
-  digitalWrite(In1, HIGH);
-  digitalWrite(In2, LOW);
-  digitalWrite(In3, LOW);
-  digitalWrite(In4, HIGH);
-  delay(wtime-130);
-  analogWrite(EnA, 170);
-  analogWrite(EnB, 170);
-  digitalWrite(In1, HIGH);
-  digitalWrite(In2, LOW);
-  digitalWrite(In3, HIGH);
-  digitalWrite(In4, LOW);
-  delay(wtime*2+30);
-  digitalWrite(In1, LOW);
-  digitalWrite(In2, LOW);
-  digitalWrite(In3, LOW);
-  digitalWrite(In4, LOW);
-  delay(5);
-}
-
 //**********************************
 //-----------------------------------------------
 
@@ -344,13 +239,13 @@ void TurnB(int wtime) //
 
 void  MazeMaster_FSM(){
 //The initial state is always -1 until  the button is pressed.
-const int D = 20;  //This is the reference distance, in  cm, for the car to consider the obstacles. If the sensor detects something below  this distance, it will consider as an obstacle.
 const int wtime = 500;  //Time  used on each action(right, straight, left or turn around).
 
  
 
   switch(state){
 
+    // Waiting for button
     case -1:
       if(button==1) {
         button=0;
@@ -358,121 +253,73 @@ const int wtime = 500;  //Time  used on each action(right, straight, left or tur
       }
       break;
     
+    // Inital state
     case 0:
       dir=pings();
       state=dir;
       break;
 
+    // Turn Right
     case  1:
       Serial.print("state = ");
       Serial.println(state);
       rec[a]=1;
       a++;
-      turnR(wtime);
+      TurnR(wtime);
       
-      // DEBUG - restore once sensors are operational
-      //dir=pings();
-      //state=dir;
+      dir=pings();
+      state=dir;
       break;
     
+    // Move Foward / Centering
     case 2:
       Serial.print("state = ");
       Serial.println(state);
       rec[a]=2;
       a++;
-      Serial.print("a2 = ");
-      Serial.println(a);
       walk(wtime);
       
-      // DEBUG - restore once sensors are operational
-      //dir=pings();
-      //state=dir;
+      dir=pings();
+      state=dir;
       break;
     
+    // Turn Left
     case 3:
       Serial.print("state = ");
       Serial.println(state);
       rec[a]=3;
       a++;
-      turnL(wtime);
+      TurnL(wtime);
       
-      // DEBUG - restore once sensors are operational
-      //dir=pings();
-      //if(dir==3)state=8;
-      //else state=dir;
+      dir=pings();
+      state=dir;
       break;
 
+    // Turn back
     case 4:
       Serial.print("state  = ");
       Serial.println(state);
       rec[a]=4;
       a++;
-      Serial.print("a4  = ");
-      Serial.println(a);
       back(wtime);
 
-      // DEBUG - restore once sensors are operational
-      //dir=pings();
-      //state=dir;
-      break;
-
-    case 5:
-    /*
-      Serial.print("state = ");
-      Serial.println(state);
-      rec[a]=3;
-      a++;
-      turnL(wtime);
-      Serial.println("I HAVE ARRIVED! ");
-      rec[a]=5;
-      state=6;
-      break;
-    */
-      TurnA(wtime); // originally right
-      break;
-    
-    case 6:
-    /*
-      digitalWrite(LED_BUILTIN,HIGH);
-      if(button==1)
-      {Recb();
-      button==0;}
-      delay(500);
-      state=7;
-      break;
-    */
-      TurnB(wtime); // originally left
-      break;
-     
-    case 7:
-      digitalWrite(LED_BUILTIN,LOW);
-    
-      if(button==1) {
-        Recb();
-        button==0;
-      }
-      delay(500);
-      state=6;
-      break;
-
-    case 8:
-      Serial.print("state = ");
-      Serial.println(state);
-      rec[a]=3;
-      a++;
-      turnL(wtime);
-
       dir=pings();
-      if(dir==3)state=5;
-      else state=dir;
+      state=dir;
       break;
-
+    
+    // Maze Complete
+    case 5:
+      Serial.print("state  = ");
+      Serial.println(state);
+      rec[a]=5;
+      a++;
+      break;
   }
 
 }
 //------------------------------
 
-void  Recb(){
+void Recb(){
   Serial.print("start -> ");
   for(int i=0;i<=a;i++)
   {Serial.println(rec[i]);}
@@ -492,16 +339,16 @@ int pings(){
   //const  int D = 20;
   
   // Get the distance in each direction
-  rightdist = getDistance(int RIGHT_TRIGGER, int RIGHT_ECHO, double RIGHT_R, double RIGHT_OFFSET);
-  leftdist = getDistance(int LEFT_TRIGGER, int LEFT_ECHO, double LEFT_R, double LEFT_OFFSET);
-  frontdist = getDistance(int FRONT_TRIGGER, int FRONT_ECHO, double FRONT_R, double FRONT_OFFSET);
+  rightdist = getDistance(RIGHT_TRIGGER, RIGHT_ECHO, RIGHT_R, RIGHT_OFFSET);
+  leftdist = getDistance(LEFT_TRIGGER, LEFT_ECHO, LEFT_R, LEFT_OFFSET);
+  frontdist = getDistance(FRONT_TRIGGER, FRONT_ECHO, FRONT_R, FRONT_OFFSET);
 
   // convert direction int spesific case
   // left -> 3
   // forward -> 2
   // right -> 1
   // back -> 4
-  // complete -> ?
+  // complete -> 5
   switch (dir)
   {
     case LEFT:
@@ -521,34 +368,13 @@ int pings(){
       break;
 
     case COMPLETE:
-      //return ?; TODO: what is the complete state
-      //break;
+      return 5;
+      break;
+
     default:
       return -1;
   }
   
-  /*
-  dirdist = ping(pinge1);
-  Serial.print("distance  at right(->) = ");
-  Serial.println(dirdist);
-
-  if(dirdist>D){dir=1;}
-  else{
-    fdist = ping(pinge2);
-    Serial.print("distance at front(^)  = ");
-    Serial.println(fdist);
-
-    if(fdist>D){dir=2;}
-    else{ 
-      esqdist = ping(pinge3);
-      Serial.print("distance at left(<-) = ");
-      Serial.println(esqdist);
-
-      if(esqdist>D){dir=3;}
-      else {dir=4;}
-    }
-  }
-  */
   return dir;
 }
 
@@ -577,6 +403,3 @@ void  loop() {
     MazeMaster_FSM();
   }
 }
-
-  
-
