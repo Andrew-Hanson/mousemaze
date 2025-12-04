@@ -36,8 +36,6 @@ int In4 = 12;  //left       // Modified - From A2 to 12   Direction - Low == for
 int EnB = 3;   //left       //  Modified - From 11 to 3   PWM
 
 // other constants / purpose unknown to Chloe
-int rec[50];
-int a;
 
 int dir;
 int esqdist;
@@ -57,7 +55,6 @@ void setup() {
   pinMode(button, INPUT);
   attachInterrupt(0,B_ISR, RISING);
 
-  a=0;
 
   // Motor config
   pinMode(In1,  OUTPUT);
@@ -71,7 +68,7 @@ void setup() {
   analogWrite(EnA,  0);
   analogWrite(EnB, 0);
 
-  state = -1;
+  state = 0;
 
   // Sensor Distances
   rightdist = 0.0;
@@ -125,25 +122,84 @@ double getDistance(int pinTrig, int pinEcho, double R, double offset) {
 //**********************************
 //Each  funcion uses different values in the analogWrite and delay. That's because the motors  aren't exactly the same and the battery will slightly lose power.
 
-// Case 2
-void  walk(int wtime) //Makes the cars go straight
+// used for moving forward
+void  walk() //Makes the cars go straight
 {
   digitalWrite(In1, LOW);  // Brake - HIGH == on, LOW == off
   digitalWrite(In3, LOW);  // Brake - HIGH == on, LOW == off
   digitalWrite(In2, LOW);   // Direction - Low == forward, HIGH == reverse
   digitalWrite(In4, HIGH);   // Direction - Low == reverse, HIGH == forward
-  analogWrite(EnA, 155);    //Top down: right
-  analogWrite(EnB, 220);    //Top down: left
-  delay(965);
+  analogWrite(EnA, 110);    //Top down: right
+  analogWrite(EnB, 110);    //Top down: left
+  delay(400); // og val 150
   //digitalWrite(In1, HIGH);  // Brake - HIGH == on, LOW == off
   //digitalWrite(In3, HIGH);  // Brake - HIGH == on, LOW == off
   analogWrite(EnA, 0);
   analogWrite(EnB, 0);
 }
 
+void slightLeft()
+{
+  digitalWrite(In1, LOW);  // Brake - HIGH == on, LOW == off
+  digitalWrite(In3, LOW);  // Brake - HIGH == on, LOW == off
+  digitalWrite(In2, LOW);   // Direction - Low == forward, HIGH == reverse
+  digitalWrite(In4, HIGH);   // Direction - Low == reverse, HIGH == forward
+  analogWrite(EnA, 110);    //Top down: right
+  analogWrite(EnB, 0);    //Top down: left
+  delay(150);
+  //digitalWrite(In1, HIGH);  // Brake - HIGH == on, LOW == off
+  //digitalWrite(In3, HIGH);  // Brake - HIGH == on, LOW == off
+  analogWrite(EnA, 0);
+  analogWrite(EnB, 0);
+}
+
+void slightRight()
+{
+  digitalWrite(In1, LOW);  // Brake - HIGH == on, LOW == off
+  digitalWrite(In3, LOW);  // Brake - HIGH == on, LOW == off
+  digitalWrite(In2, LOW);   // Direction - Low == forward, HIGH == reverse
+  digitalWrite(In4, HIGH);   // Direction - Low == reverse, HIGH == forward
+  analogWrite(EnA, 0);    //Top down: right
+  analogWrite(EnB, 110);    //Top down: left
+  delay(150);
+  //digitalWrite(In1, HIGH);  // Brake - HIGH == on, LOW == off
+  //digitalWrite(In3, HIGH);  // Brake - HIGH == on, LOW == off
+  analogWrite(EnA, 0);
+  analogWrite(EnB, 0);
+}
+
+// case 2
+void Center()
+{
+  // Right has an open spot 
+  if (((rightdist < WALL_VAL_ERROR) || (rightdist > (MAX_VAL_SIDE_WALL + WALL_VAL_ERROR))) && (leftdist < (MAX_VAL_SIDE_WALL + WALL_VAL_ERROR)))
+  {
+    if (leftdist < ((MAX_VAL_SIDE_WALL -  WALL_VAL_ERROR) / 2))
+    {
+      slightRight();
+    }
+    else if (leftdist > ((MAX_VAL_SIDE_WALL -  WALL_VAL_ERROR) / 2))
+    {
+      slightLeft();
+    }
+  }
+  else
+  {
+    if( leftdist < (rightdist - WALL_VAL_ERROR))
+    {
+      slightRight();
+    }
+    else if( leftdist > (rightdist + WALL_VAL_ERROR))
+    {
+      slightLeft();
+    }
+  }
+  walk();
+}
+
 
 // Case 1
-void TurnR(int duration)  // straight, turn left
+void TurnR()  // straight, turn right
 {
   // Equalize speeds, move forward an inch
   digitalWrite(In1, LOW);   // Brake - HIGH == on, LOW == off
@@ -155,7 +211,7 @@ void TurnR(int duration)  // straight, turn left
   analogWrite(EnB, 170);  // Motor B
   delay(300);
 
-  // Turn left
+  // Turn Right
   analogWrite(EnA, 0);
   analogWrite(EnB, 145);
 
@@ -169,14 +225,13 @@ void TurnR(int duration)  // straight, turn left
 
   // Duration
   delay(620);
-  //delay(duration);
 
   // Turn off
   analogWrite(EnB, 0);
 }
 
 // Case 3
-void TurnL(int duration) // straight, turn right
+void TurnL() // straight, turn left
 {
   // Equalize speeds, move forward an inch
   digitalWrite(In1, LOW);   // Brake - HIGH == on, LOW == off
@@ -188,7 +243,7 @@ void TurnL(int duration) // straight, turn right
   analogWrite(EnB, 180);  // Motor B
   delay(300);
 
-  // Turn right
+  // Turn left
   analogWrite(EnA, 140);
   analogWrite(EnB, 0);
 
@@ -202,14 +257,14 @@ void TurnL(int duration) // straight, turn right
 
   // Duration
   delay(600);
-  //delay(duration);
 
   // Turn off
   analogWrite(EnA, 0);
 }
 
 // Case 4
-void back(int wtime) //Makes the car turn around  180. This happens when the sensor detect obstacles in all directions.
+/*
+void back() //Makes the car turn around  180. This happens when the sensor detect obstacles in all directions.
 {
   // Equalize speeds, move forward an inch
   digitalWrite(In1, LOW);   // Brake - HIGH == on, LOW == off
@@ -219,6 +274,24 @@ void back(int wtime) //Makes the car turn around  180. This happens when the sen
   delay(10);
   analogWrite(EnA, 140); // Motor A
   analogWrite(EnB, 190);  // Motor B
+  delay(800);
+
+  analogWrite(EnA, 0);
+  analogWrite(EnB, 0);
+}
+*/
+
+void TurnB()  // straight, turn left
+{
+  // Equalize speeds, move forward an inch
+  digitalWrite(In1, LOW);   // Brake - HIGH == on, LOW == off
+  digitalWrite(In3, LOW);   // Brake - HIGH == on, LOW == off
+  digitalWrite(In2, LOW);  // Direction - Low == forward, HIGH == reverse
+  digitalWrite(In4, LOW);   // Direction - Low == reverse, HIGH == forward
+  delay(10);
+  analogWrite(EnA, 140); // Motor A
+  analogWrite(EnB, 190);  // Motor B
+  //delay(1200); 800
   delay(800);
 
   analogWrite(EnA, 0);
@@ -236,13 +309,9 @@ void back(int wtime) //Makes the car turn around  180. This happens when the sen
 //The cars reaches to the end if  it does 3 lefts in a row and to do so, it needs to go to state 3, state 8 and 5  consecutively. So state 8 represents the 2nd left and state 5 represents the
 //3rd  left. After reaching to the end of the maze, it goes from state 5 to 6. By this  point, the finite state machine will be always moving from state 6 to 7 and vice-versa.
 //State  6 turns on the arduino's builtin LED and state 7 turns it off. Regardless of if  it is in 6 or 7, it waits for the button to be pressed to print the log.
-
+/*
 void  MazeMaster_FSM(){
 //The initial state is always -1 until  the button is pressed.
-const int wtime = 500;  //Time  used on each action(right, straight, left or turn around).
-
- 
-
   switch(state){
 
     // Waiting for button
@@ -263,9 +332,7 @@ const int wtime = 500;  //Time  used on each action(right, straight, left or tur
     case  1:
       Serial.print("state = ");
       Serial.println(state);
-      rec[a]=1;
-      a++;
-      TurnR(wtime);
+      TurnR();
       
       dir=pings();
       state=dir;
@@ -275,9 +342,7 @@ const int wtime = 500;  //Time  used on each action(right, straight, left or tur
     case 2:
       Serial.print("state = ");
       Serial.println(state);
-      rec[a]=2;
-      a++;
-      walk(wtime);
+      Center();
       
       dir=pings();
       state=dir;
@@ -287,9 +352,7 @@ const int wtime = 500;  //Time  used on each action(right, straight, left or tur
     case 3:
       Serial.print("state = ");
       Serial.println(state);
-      rec[a]=3;
-      a++;
-      TurnL(wtime);
+      TurnL();
       
       dir=pings();
       state=dir;
@@ -299,10 +362,8 @@ const int wtime = 500;  //Time  used on each action(right, straight, left or tur
     case 4:
       Serial.print("state  = ");
       Serial.println(state);
-      rec[a]=4;
-      a++;
-      back(wtime);
-
+      TurnB();
+      Serial.println("Moved back");
       dir=pings();
       state=dir;
       break;
@@ -311,20 +372,13 @@ const int wtime = 500;  //Time  used on each action(right, straight, left or tur
     case 5:
       Serial.print("state  = ");
       Serial.println(state);
-      rec[a]=5;
-      a++;
       break;
   }
 
 }
+*/
 //------------------------------
 
-void Recb(){
-  Serial.print("start -> ");
-  for(int i=0;i<=a;i++)
-  {Serial.println(rec[i]);}
-  button=0;
-}
     //---------------------------
 
 //This is the function  that measures the distances using the ultrassonic sensors.
@@ -342,6 +396,16 @@ int pings(){
   rightdist = getDistance(RIGHT_TRIGGER, RIGHT_ECHO, RIGHT_R, RIGHT_OFFSET);
   leftdist = getDistance(LEFT_TRIGGER, LEFT_ECHO, LEFT_R, LEFT_OFFSET);
   frontdist = getDistance(FRONT_TRIGGER, FRONT_ECHO, FRONT_R, FRONT_OFFSET);
+
+  Serial.println("************************");
+  Serial.print("L: ");
+  Serial.println(leftdist);
+  Serial.print("F: ");
+  Serial.println(frontdist);
+  Serial.print("R: ");
+  Serial.println(rightdist);
+  Serial.print("Next: ");
+  Direction dir = GetNextMov(leftdist, frontdist, rightdist);
 
   // convert direction int spesific case
   // left -> 3
@@ -374,12 +438,14 @@ int pings(){
     default:
       return -1;
   }
+  Serial.println(dir);
+  Serial.println("************************");
   
   return dir;
 }
 
 //---------------------------
-
+/*
 void  loop() {
   String sendString;
   String Q;
@@ -396,10 +462,67 @@ void  loop() {
     }
   }
   Q = sendString;
-  if(Q.charAt(0) == '1' || Q.charAt(0) == '2' || Q.charAt(0) == '3' || Q.charAt(0) == '4' || Q.charAt(0) == '5' || Q.charAt(0) == '6'){         
-    state = Q.toInt();
-    Serial.print("Sent value: ");
-    Serial.println(Q.toInt());
-    MazeMaster_FSM();
+  if(Q.charAt(0) == '0'){         
+    while(1)
+    {
+      MazeMaster_FSM();
+    } 
   }
+}
+
+*/
+
+void RunMaze()
+{
+  while(!Serial.available());
+  while(1)
+  {
+    int direction = pings();
+    switch (direction)
+    {
+      case  1:
+        Serial.print("state = ");
+        Serial.println(direction);
+        delay(100);
+        TurnR();
+        break;
+      
+      // Move Foward / Centering
+      case 2:
+        Serial.print("state = ");
+        Serial.println(direction);
+        delay(100);
+        Center();
+        break;
+      
+      // Turn Left
+      case 3:
+        Serial.print("state = ");
+        Serial.println(direction);
+        delay(100);
+        TurnL();
+        break;
+
+      // Turn back
+      case 4:
+        Serial.print("state  = ");
+        Serial.println(direction);
+        delay(100);
+        TurnB();
+        break;
+      
+      // Maze Complete
+      case 5:
+        Serial.print("state  = ");
+        Serial.println(direction);
+        delay(1000);
+        while(1);
+        break;
+    }
+  }
+}
+
+void  loop()
+{
+  RunMaze();
 }
