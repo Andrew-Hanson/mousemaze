@@ -40,7 +40,7 @@
 #define MAX_VAL_SIDE_WALL 20    // Max value that could still be 
                                 // a side wall
 #define WALL_VAL_ERROR 0.5      // Possible error measured value
-#define MAX_VAL_MAZE_WALL 100   // Max value that could still be
+#define MAX_VAL_MAZE_WALL 140   // Max value that could still be
                                 // a wall in the maze.
 
 /*===============================================================
@@ -75,7 +75,7 @@ enum Direction {FORWARD, RIGHT, BACK, LEFT, COMPLETE};
 *   - Right:    0x01 (LSB)                                      *
 *                                                               *
 *<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
-char GetWalls(const float leftDist, const float frontDist, const float rightDist)
+char GetWalls(const double leftDist, const double frontDist, const double rightDist)
 {
     char walls = 0x00;
     //check for left gap
@@ -115,7 +115,7 @@ char GetWalls(const float leftDist, const float frontDist, const float rightDist
 *   - Not Complete: 0x00                                        *
 *                                                               *
 *<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
-char IsComplete(const float leftDist, const float frontDist, const float rightDist)
+char IsComplete(const double leftDist, const double frontDist, const double rightDist)
 {
     char walls = 0x00;
     //check for left wall
@@ -124,12 +124,12 @@ char IsComplete(const float leftDist, const float frontDist, const float rightDi
         walls = walls | LEFT_WALL;
     }
     //check for front wall
-    if ((frontDist < (MAX_VAL_MAZE_WALL - WALL_VAL_ERROR)) && (leftDist > WALL_VAL_ERROR))
+    if ((frontDist < (MAX_VAL_MAZE_WALL - WALL_VAL_ERROR)) && (frontDist > WALL_VAL_ERROR))
     {
         walls = walls | FRONT_WALL;
     }
     //check for right wall
-    if ((rightDist < (MAX_VAL_MAZE_WALL - WALL_VAL_ERROR)) && (leftDist > WALL_VAL_ERROR))
+    if ((rightDist < (MAX_VAL_MAZE_WALL - WALL_VAL_ERROR)) && (rightDist > WALL_VAL_ERROR))
     {
         walls = walls | RIGHT_WALL;
     }
@@ -219,7 +219,7 @@ enum Direction ChooseDirection(const char walls, const char isComplete)
 * Returns a direction to move or that the maze is complete.     *
 *                                                               *
 *<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
-enum Direction GetNextMov(const float leftDist, const float frontDist, const float rightDist)
+enum Direction GetNextMov(const double leftDist, const double frontDist, const double rightDist)
 {
     // get walls from sensor distances
     char walls = GetWalls(leftDist, frontDist, rightDist);
@@ -230,4 +230,3 @@ enum Direction GetNextMov(const float leftDist, const float frontDist, const flo
     //choose a movement direction
     return ChooseDirection(walls, isComplete);
 }
-
