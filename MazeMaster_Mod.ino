@@ -45,8 +45,6 @@ void setup() {
   // HC-05 default baud rate
   Serial.begin(38400);
   //button=0;
-  pinMode(button, INPUT);
-  attachInterrupt(0,B_ISR, RISING);
 
 
   // Motor config
@@ -61,7 +59,6 @@ void setup() {
   analogWrite(EnA,  0);
   analogWrite(EnB, 0);
 
-  state = 0;
 
   // Sensor Distances
   rightdist = 0.0;
