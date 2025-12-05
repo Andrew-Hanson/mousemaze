@@ -1,7 +1,7 @@
 /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>*
 * Project: Arduino Maze Solver                                  *
 * File: NavigationController.c                                  *
-* Version: 1.1                                                  *
+* Version: 1.2                                                  *
 * Last Modified: Dec. 3rd, 2025                                 *
 *                                                               *
 * Author: Chloe Beal                                            *
@@ -20,6 +20,8 @@
 *   1.1: Updated maze complete checking to allow for when a     *
 *       sensor fails to find a wall, it counts that as being    *
 *       outside the maze.                                       *
+*   1.2: Adjusted wall constsnts to account for not being       *
+*       parrallel to a wall.                                    *
 *                                                               *
 *<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
@@ -35,9 +37,9 @@
 ||                       Public Constants                      ||
 ===============================================================*/
 
-#define MAX_VAL_FRONT_WALL 20   // Max value that could still be 
+#define MAX_VAL_FRONT_WALL 30   // Max value that could still be 
                                 // a front wall
-#define MAX_VAL_SIDE_WALL 20    // Max value that could still be 
+#define MAX_VAL_SIDE_WALL 30    // Max value that could still be 
                                 // a side wall
 #define WALL_VAL_ERROR 0.5      // Possible error measured value
 #define MAX_VAL_MAZE_WALL 140   // Max value that could still be
@@ -230,3 +232,4 @@ enum Direction GetNextMov(const double leftDist, const double frontDist, const d
     //choose a movement direction
     return ChooseDirection(walls, isComplete);
 }
+
